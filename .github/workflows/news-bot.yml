@@ -1,0 +1,43 @@
+name: Refinery News Bot (Daily 08:00 KST)
+
+on:
+  schedule:
+    - cron: '0 23 * * *'   # 매일 08:00 KST
+  workflow_dispatch: {}
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Seoul
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Run news pipeline (ONCE)
+        run: |
+          set -e
+          echo "[RUN] $(date) starting news_pipeline.py --once"
+          python news_pipeline.py --once
+          echo "[RUN] $(date) finished"
+
+      - name: Upload HTML preview (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: email-preview
+          path: email_preview.html
+          if-no-files-found: warn
