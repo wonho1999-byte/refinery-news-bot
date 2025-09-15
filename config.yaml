@@ -1,0 +1,141 @@
+app:
+  timezone: "Asia/Seoul"
+  run_time_hour: 8        # 매일 08:00
+  lookback_hours: 24
+  max_items_per_subcategory: 5
+  language: "ko"          # Google News 지역/언어
+  country: "KR"
+
+sources:
+  google_news:
+    base: "https://news.google.com/rss/search"
+    hl: "ko"
+    gl: "KR"
+    ceid: "KR:ko"
+    # Google News 검색 예시: q="키워드 when:1d site:-(tistory.com) -blog"
+    # 블로그/카페 도메인 필터는 코드 레벨에서도 한 번 더 제거
+
+email:
+  smtp_host: "keullipingnyuseu@gmail.com"
+  smtp_port: 587
+  use_tls: true
+  username: "keullipingnyuseu@gmail.com"
+  password_env: "SMTP_PASSWORD"   # 환경변수에서 불러옴
+  from_name: "정유사 AI 뉴스봇"
+  from_addr: "keullipingnyuseu@gmail.com"
+  to_addrs:
+    - "wh.lee@gscaltex.com, sm.joo@gscaltex.com"
+  subject_prefix: "[정유 뉴스 요약]"
+
+openai:
+  enable_summarize: true
+  enable_embeddings: false
+  model: "gpt-4o-mini"
+  api_key_env: "OPENAI_API_KEY"
+
+filters:
+  block_domains:
+    - "blog.naver.com"
+    - "m.blog.naver.com"
+    - "tistory.com"
+    - "medium.com"
+    - "brunch.co.kr"
+    - "velog.io"
+  political_noise_keywords:
+    - "우파"
+    - "좌파"
+    - "진보"
+    - "보수"
+    - "정당"
+    - "선거"
+    - "총선"
+    - "대선"
+    - "국회"
+  soft_noise_keywords:
+    - "연예"
+    - "게임"
+    - "SNS"
+    - "유튜버"
+    - "루머"
+    - "썰"
+
+scoring:
+  base_match: 1.0
+  refinery_relevance:
+    fuel_terms:              # 정유 연관성 가중치(+)
+      - "경유"
+      - "휘발유"
+      - "등유"
+      - "항공유"
+      - "VLSFO"
+      - "ULSD"
+      - "MGO"
+      - "Gasoil"
+      - "Gasoline"
+      - "Kerosene"
+      - "Jet A-1"
+      - "JP-5"
+      - "JP-8"
+      - "아스팔트"
+      - "AP-5"
+      - "친환경 아스팔트"
+      - "특수아스팔트"
+    weight: 2.0
+  political_penalty:
+    terms: ["우파","좌파","진보","보수","정당","선거","총선","대선","국회"]
+    weight: -3.0
+  soft_penalty:
+    terms: ["연예","게임","SNS","유튜버","루머","썰"]
+    weight: -2.0
+  unrelated_penalty:
+    weight: -1.0            # 키워드 1개만 걸리고 전체 맥락상 정유와 멀면 페널티
+
+taxonomy:
+  - major: "특수영업팀 전체"
+    minor: "국제 유가 뉴스"
+    keywords: ["원유","석유"]
+  - major: "특수영업팀 전체"
+    minor: "정유4사"
+    keywords: ["S-OIL","SKE","HDO","GSC"]
+  - major: "특수영업팀 전체"
+    minor: "그룹사"
+    keywords: ["GS"]
+  - major: "유종별"
+    minor: "경유"
+    keywords: ["경유","ULSD","MGO","저유황유","초저유황유","VLSFO","Gasoil"]
+  - major: "유종별"
+    minor: "휘발유"
+    keywords: ["휘발유","Mogas","Gasoline"]
+  - major: "유종별"
+    minor: "항공유"
+    keywords: ["Jet A-1","JP-5","JP-8","항공유"]
+  - major: "유종별"
+    minor: "등유"
+    keywords: ["등유","Kero","Kerosene"]
+  - major: "유종별"
+    minor: "아스팔트"
+    keywords: ["아스팔트","AP-5","친환경 아스팔트","특수아스팔트"]
+  - major: "채널별"
+    minor: "국군납"
+    keywords: ["육군","해군","공군","해병대","국군","유류보급"]
+  - major: "채널별"
+    minor: "철도공사"
+    keywords: ["철도공사","Korail","가야차량사업소","광주차량사업소","대구차량사업소","대전차량사업소","동해차량사업소","부곡차량사업소","부산신항차량사업소","부전차량사업소","수색차량사업소","순천차량사업소","영주차량사업소","익산차량사업소","제천차량사업소","천안차량사업소","청량리차량사업소","특별동차운영단","포항차량사업소"]
+  - major: "채널별"
+    minor: "한전"
+    keywords: ["한전","한국전력","남동발전","중부발전","서부발전","남부발전","동서발전","태안발전","당진발전","남제주발전","고성그린파워","강릉에코파워","여수발전","삼천포발전","영흥발전","서천발전","강릉안인발전","영동발전","도서발전"]
+  - major: "채널별"
+    minor: "해양경찰청"
+    keywords: ["해경","해양경찰청","선박급유업"]
+  - major: "채널별"
+    minor: "수협"
+    keywords: ["수협","수협중앙회","통영수협","고성수협","코스코상운","진영","기초시설사업장"]
+  - major: "채널별"
+    minor: "해운조합"
+    keywords: ["해운조합","한화오션"]
+  - major: "채널별"
+    minor: "과세대리점"
+    keywords: ["경우해운","그린에너지","근화씨앤피","대광특수상운","보승마린","세광오일","세일산업","송강유업","에이원플러스","코스코에너지"]
+  - major: "채널별"
+    minor: "아스콘"
+    keywords: ["KP 한석유화","다온","라우러스","선웅","씨앤씨","영진상사","제이앤드디","한국석유","창포기술"]
